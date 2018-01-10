@@ -75,8 +75,10 @@ static upb_enumdef* check_enum_notfrozen(const upb_enumdef* def) {
 // DescriptorPool.
 // -----------------------------------------------------------------------------
 
+// error: initializer element is not a compile-time constant
+// VALUE c ## name = Qnil;
 #define DEFINE_CLASS(name, string_name)                             \
-    VALUE c ## name = Qnil;                                         \
+    VALUE c ## name;                                                \
     const rb_data_type_t _ ## name ## _type = {                     \
       string_name,                                                  \
       { name ## _mark, name ## _free, NULL },                       \

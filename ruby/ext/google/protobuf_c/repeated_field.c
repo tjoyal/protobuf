@@ -126,13 +126,22 @@ VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
       return native_slot_get(field_type, field_type_class, memory);
     }else{
       /* check if idx is Range */
-      switch (rb_range_beg_len(arg, &beg, &len, self->size, 0)) {
-        case Qfalse:
-          break;
-        case Qnil:
+      // https://github.com/graalvm/truffleruby/blob/f00fc3fc332ea68c9c110f568df00a3f4dcca3f8/src/main/c/cext/ruby.c#L2420
+      // error: statement requires expression of integer type ('VALUE' (aka 'void *') invalid)
+      //
+      // switch (rb_range_beg_len(arg, &beg, &len, self->size, 0)) {
+      // case Qfalse: // error: expression is not an integer constant expression
+      //   break;
+      // case Qnil: // error: expression is not an integer constant expression
+      //   return Qnil;
+      // default:
+      //   return RepeatedField_subarray(_self, beg, len);
+      // }
+      if (rb_range_beg_len(arg, &beg, &len, self->size, 0) != Qfalse) {
+        if (rb_range_beg_len(arg, &beg, &len, self->size, 0) == Qnil) {
           return Qnil;
-        default:
-          return RepeatedField_subarray(_self, beg, len);
+        }
+        return RepeatedField_subarray(_self, beg, len);
       }
     }
   }

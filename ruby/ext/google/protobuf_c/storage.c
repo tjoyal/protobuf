@@ -127,7 +127,9 @@ VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value) {
 
   if (type == UPB_TYPE_STRING &&
       rb_enc_str_coderange(value) == ENC_CODERANGE_BROKEN) {
-    rb_raise(rb_eEncodingError, "String is invalid UTF-8");
+    // Limited by https://github.com/graalvm/truffleruby/blob/11640f3055012bb54faa0c1052752c9a79b05d2e/lib/mri/rdoc/known_classes.rb
+    // rb_raise(rb_eEncodingError, "String is invalid UTF-8");
+    rb_raise(rb_eStandardError, "String is invalid UTF-8");
   }
 
   // Ensure the data remains valid.  Since we called #encode a moment ago,
