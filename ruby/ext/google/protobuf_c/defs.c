@@ -75,8 +75,6 @@ static upb_enumdef* check_enum_notfrozen(const upb_enumdef* def) {
 // DescriptorPool.
 // -----------------------------------------------------------------------------
 
-// error: initializer element is not a compile-time constant
-// VALUE c ## name = Qnil;
 #define DEFINE_CLASS(name, string_name)                             \
     VALUE c ## name;                                                \
     const rb_data_type_t _ ## name ## _type = {                     \
@@ -120,6 +118,7 @@ VALUE DescriptorPool_alloc(VALUE klass) {
 }
 
 void DescriptorPool_register(VALUE module) {
+  VALUE cDescriptorPool = Qnil;
   VALUE klass = rb_define_class_under(
       module, "DescriptorPool", rb_cObject);
   rb_define_alloc_func(klass, DescriptorPool_alloc);
@@ -288,6 +287,7 @@ VALUE Descriptor_alloc(VALUE klass) {
 }
 
 void Descriptor_register(VALUE module) {
+  cDescriptor = Qnil;
   VALUE klass = rb_define_class_under(
       module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
@@ -504,6 +504,7 @@ VALUE FieldDescriptor_alloc(VALUE klass) {
 }
 
 void FieldDescriptor_register(VALUE module) {
+  VALUE cFieldDescriptor = Qnil;
   VALUE klass = rb_define_class_under(
       module, "FieldDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FieldDescriptor_alloc);
@@ -910,6 +911,7 @@ VALUE OneofDescriptor_alloc(VALUE klass) {
 }
 
 void OneofDescriptor_register(VALUE module) {
+  VALUE cOneofDescriptor = Qnil;
   VALUE klass = rb_define_class_under(
       module, "OneofDescriptor", rb_cObject);
   rb_define_alloc_func(klass, OneofDescriptor_alloc);
@@ -1028,6 +1030,7 @@ VALUE EnumDescriptor_alloc(VALUE klass) {
 }
 
 void EnumDescriptor_register(VALUE module) {
+  VALUE cEnumDescriptor = Qnil;
   VALUE klass = rb_define_class_under(
       module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
@@ -1194,6 +1197,7 @@ VALUE MessageBuilderContext_alloc(VALUE klass) {
 }
 
 void MessageBuilderContext_register(VALUE module) {
+  VALUE cMessageBuilderContext = Qnil;
   VALUE klass = rb_define_class_under(
       module, "MessageBuilderContext", rb_cObject);
   rb_define_alloc_func(klass, MessageBuilderContext_alloc);
@@ -1487,6 +1491,7 @@ VALUE OneofBuilderContext_alloc(VALUE klass) {
 }
 
 void OneofBuilderContext_register(VALUE module) {
+  VALUE cOneofBuilderContext = Qnil;
   VALUE klass = rb_define_class_under(
       module, "OneofBuilderContext", rb_cObject);
   rb_define_alloc_func(klass, OneofBuilderContext_alloc);
@@ -1565,6 +1570,7 @@ VALUE EnumBuilderContext_alloc(VALUE klass) {
 }
 
 void EnumBuilderContext_register(VALUE module) {
+  VALUE cEnumBuilderContext = Qnil;
   VALUE klass = rb_define_class_under(
       module, "EnumBuilderContext", rb_cObject);
   rb_define_alloc_func(klass, EnumBuilderContext_alloc);
@@ -1641,6 +1647,7 @@ VALUE Builder_alloc(VALUE klass) {
 }
 
 void Builder_register(VALUE module) {
+  cBuilder = Qnil;
   VALUE klass = rb_define_class_under(module, "Builder", rb_cObject);
   rb_define_alloc_func(klass, Builder_alloc);
   rb_define_method(klass, "add_message", Builder_add_message, 1);
