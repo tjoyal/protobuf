@@ -325,7 +325,12 @@ VALUE Descriptor_name(VALUE _self) {
 VALUE Descriptor_name_set(VALUE _self, VALUE str) {
   DEFINE_SELF(Descriptor, self, _self);
   upb_msgdef* mut_def = check_msg_notfrozen(self->msgdef);
-  const char* name = get_str(str);
+
+   const char* name = get_str(str);
+   // Not working:
+   // VALUE managed_str = rb_tr_handle_for_managed_leaking(str);
+   // const char* name = get_str(managed_str);
+
   CHECK_UPB(
       upb_msgdef_setfullname(mut_def, name, &status),
       "Error setting Descriptor name");
@@ -1218,9 +1223,13 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
                                        VALUE msgdef,
                                        VALUE builder) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
+
   // pretty sure this is wrong :s
-  self->descriptor = rb_tr_handle_for_managed(msgdef);
-  self->builder = rb_tr_handle_for_managed(builder);
+  // self->descriptor = msgdef;
+  self->descriptor = rb_tr_handle_for_managed_leaking(msgdef);
+  // self->builder = builder;
+  self->builder = rb_tr_handle_for_managed_leaking(builder);
+
   return Qnil;
 }
 
@@ -1659,7 +1668,10 @@ void Builder_register(VALUE module) {
  */
 VALUE Builder_initialize(VALUE _self) {
   DEFINE_SELF(Builder, self, _self);
+
+  // self->pending_list = rb_ary_new();
   self->pending_list = rb_tr_handle_for_managed(rb_ary_new());
+
   return Qnil;
 }
 
@@ -1677,11 +1689,12 @@ VALUE Builder_initialize(VALUE _self) {
 VALUE Builder_add_message(VALUE _self, VALUE name) {
   DEFINE_SELF(Builder, self, _self);
   VALUE msgdef = rb_class_new_instance(0, NULL, cDescriptor);
-  VALUE args = rb_ary_new();
-  rb_ary_push(args, msgdef);
-  rb_ary_push(args, _self);
 
   // VALUE args[2] = { msgdef, _self };
+  VALUE args[2];
+  args[0] = msgdef;
+  args[1] = _self;
+
   VALUE ctx = rb_class_new_instance(2, args, cMessageBuilderContext);
   VALUE block = rb_block_proc();
   rb_funcall(msgdef, rb_intern("name="), 1, name);
@@ -1775,6 +1788,8 @@ VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb) {
     add_def_obj(self->defs[i], def_rb);
   }
 
+  // self->pending_list = rb_ary_new();
   self->pending_list = rb_tr_handle_for_managed(rb_ary_new());
+
   return Qnil;
 }

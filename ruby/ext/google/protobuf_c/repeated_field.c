@@ -137,8 +137,9 @@ VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
       // default:
       //   return RepeatedField_subarray(_self, beg, len);
       // }
-      if (rb_range_beg_len(arg, &beg, &len, self->size, 0) != Qfalse) {
-        if (rb_range_beg_len(arg, &beg, &len, self->size, 0) == Qnil) {
+      VALUE result = rb_range_beg_len(arg, &beg, &len, self->size, 0);
+      if (result != Qfalse) {
+        if (result == Qnil) {
           return Qnil;
         }
         return RepeatedField_subarray(_self, beg, len);
