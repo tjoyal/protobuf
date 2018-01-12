@@ -118,7 +118,6 @@ VALUE DescriptorPool_alloc(VALUE klass) {
 }
 
 void DescriptorPool_register(VALUE module) {
-  VALUE cDescriptorPool = Qnil;
   VALUE klass = rb_define_class_under(
       module, "DescriptorPool", rb_cObject);
   rb_define_alloc_func(klass, DescriptorPool_alloc);
@@ -287,7 +286,6 @@ VALUE Descriptor_alloc(VALUE klass) {
 }
 
 void Descriptor_register(VALUE module) {
-  cDescriptor = Qnil;
   VALUE klass = rb_define_class_under(
       module, "Descriptor", rb_cObject);
   rb_define_alloc_func(klass, Descriptor_alloc);
@@ -504,7 +502,6 @@ VALUE FieldDescriptor_alloc(VALUE klass) {
 }
 
 void FieldDescriptor_register(VALUE module) {
-  VALUE cFieldDescriptor = Qnil;
   VALUE klass = rb_define_class_under(
       module, "FieldDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FieldDescriptor_alloc);
@@ -911,7 +908,6 @@ VALUE OneofDescriptor_alloc(VALUE klass) {
 }
 
 void OneofDescriptor_register(VALUE module) {
-  VALUE cOneofDescriptor = Qnil;
   VALUE klass = rb_define_class_under(
       module, "OneofDescriptor", rb_cObject);
   rb_define_alloc_func(klass, OneofDescriptor_alloc);
@@ -1030,7 +1026,6 @@ VALUE EnumDescriptor_alloc(VALUE klass) {
 }
 
 void EnumDescriptor_register(VALUE module) {
-  VALUE cEnumDescriptor = Qnil;
   VALUE klass = rb_define_class_under(
       module, "EnumDescriptor", rb_cObject);
   rb_define_alloc_func(klass, EnumDescriptor_alloc);
@@ -1197,7 +1192,6 @@ VALUE MessageBuilderContext_alloc(VALUE klass) {
 }
 
 void MessageBuilderContext_register(VALUE module) {
-  VALUE cMessageBuilderContext = Qnil;
   VALUE klass = rb_define_class_under(
       module, "MessageBuilderContext", rb_cObject);
   rb_define_alloc_func(klass, MessageBuilderContext_alloc);
@@ -1224,8 +1218,9 @@ VALUE MessageBuilderContext_initialize(VALUE _self,
                                        VALUE msgdef,
                                        VALUE builder) {
   DEFINE_SELF(MessageBuilderContext, self, _self);
-  self->descriptor = msgdef;
-  self->builder = builder;
+  // pretty sure this is wrong :s
+  self->descriptor = rb_tr_handle_for_managed(msgdef);
+  self->builder = rb_tr_handle_for_managed(builder);
   return Qnil;
 }
 
@@ -1491,7 +1486,6 @@ VALUE OneofBuilderContext_alloc(VALUE klass) {
 }
 
 void OneofBuilderContext_register(VALUE module) {
-  VALUE cOneofBuilderContext = Qnil;
   VALUE klass = rb_define_class_under(
       module, "OneofBuilderContext", rb_cObject);
   rb_define_alloc_func(klass, OneofBuilderContext_alloc);
@@ -1570,7 +1564,6 @@ VALUE EnumBuilderContext_alloc(VALUE klass) {
 }
 
 void EnumBuilderContext_register(VALUE module) {
-  VALUE cEnumBuilderContext = Qnil;
   VALUE klass = rb_define_class_under(
       module, "EnumBuilderContext", rb_cObject);
   rb_define_alloc_func(klass, EnumBuilderContext_alloc);
@@ -1647,8 +1640,8 @@ VALUE Builder_alloc(VALUE klass) {
 }
 
 void Builder_register(VALUE module) {
-  cBuilder = Qnil;
-  VALUE klass = rb_define_class_under(module, "Builder", rb_cObject);
+  VALUE klass = rb_define_class_under(
+      module, "Builder", rb_cObject);
   rb_define_alloc_func(klass, Builder_alloc);
   rb_define_method(klass, "add_message", Builder_add_message, 1);
   rb_define_method(klass, "add_enum", Builder_add_enum, 1);
@@ -1666,7 +1659,7 @@ void Builder_register(VALUE module) {
  */
 VALUE Builder_initialize(VALUE _self) {
   DEFINE_SELF(Builder, self, _self);
-  self->pending_list = rb_ary_new();
+  self->pending_list = rb_tr_handle_for_managed(rb_ary_new());
   return Qnil;
 }
 
@@ -1684,7 +1677,11 @@ VALUE Builder_initialize(VALUE _self) {
 VALUE Builder_add_message(VALUE _self, VALUE name) {
   DEFINE_SELF(Builder, self, _self);
   VALUE msgdef = rb_class_new_instance(0, NULL, cDescriptor);
-  VALUE args[2] = { msgdef, _self };
+  VALUE args = rb_ary_new();
+  rb_ary_push(args, msgdef);
+  rb_ary_push(args, _self);
+
+  // VALUE args[2] = { msgdef, _self };
   VALUE ctx = rb_class_new_instance(2, args, cMessageBuilderContext);
   VALUE block = rb_block_proc();
   rb_funcall(msgdef, rb_intern("name="), 1, name);
@@ -1778,6 +1775,6 @@ VALUE Builder_finalize_to_pool(VALUE _self, VALUE pool_rb) {
     add_def_obj(self->defs[i], def_rb);
   }
 
-  self->pending_list = rb_ary_new();
+  self->pending_list = rb_tr_handle_for_managed(rb_ary_new());
   return Qnil;
 }
